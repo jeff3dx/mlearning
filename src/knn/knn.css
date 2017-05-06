@@ -1,0 +1,27 @@
+svg {
+  margin-left: 5px;
+}
+
+.border {
+  fill: none;
+  stroke-width: 1px;
+  stroke: #aaa;
+}
+
+.legend {
+  margin-bottom: 3px;
+}
+
+.legend .legend-box {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin: 0 5px -3px 10px;
+}
+
+.legend .legend-label {
+  display: inline-block;
+  font-weight: bold;
+  font-size: 12px;
+  margin-bottom: 3px;
+}
