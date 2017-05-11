@@ -2,48 +2,20 @@ import React, { Component } from 'react';
 import { PropTypes } from 'prop-types';
 import * as d3 from 'd3';
 import './knn.css';
+import { getExtents } from '../common';
+import { TRAINING_DATA } from './training-data';
 
-const TRAINING_DATA = {
-    dimensions: [
-        'rooms': 0,
-        'area': 1,
-        'type': 2
-    ],
-    data: [
-        [1, 350, 'apartment'],
-        [2, 300, 'apartment'],
-        [3, 300, 'apartment'],
-        [4, 250, 'apartment'],
-        [4, 500, 'apartment'],
-        [4, 400, 'apartment'],
-        [5, 450, 'apartment'],
-        [7, 850, 'house'],
-        [7, 900, 'house'],
-        [7, 1200, 'house'],
-        [8, 1500, 'house'],
-        [9, 1300, 'house'],
-        [8, 1240, 'house'],
-        [10, 1700, 'house'],
-        [9, 1000, 'house'],
-        [1, 800, 'flat'],
-        [3, 900, 'flat'],
-        [2, 700, 'flat'],
-        [1, 900, 'flat'],
-        [2, 1150, 'flat'],
-        [1, 1000, 'flat'],
-        [2, 1200, 'flat'],
-        [1, 1300, 'flat']
-    ]
-}
-
+const DEMO_ANIM_TIME = 1000;
 
 export default class Knn extends Component {
     static propTypes = {
-        trainingData: PropTypes.object
+        trainingData: PropTypes.object,
+        k: PropTypes.number
     }
 
     static defaultProps = {
         trainingData: TRAINING_DATA,
+        k: 3,
         width: 600,
         height: 600,
         pad: 30
@@ -59,7 +31,7 @@ export default class Knn extends Component {
 
 
     /**
-     * Setup D3 click handler which provides nice coordinate translation
+     * Sets a point at the clicked coordinate
      */
     setupClick = () => {
         const self = this;
@@ -72,21 +44,23 @@ export default class Knn extends Component {
                 null
             ]
             self.setState({ unknownNode: unknown });
+            self.renderAnimatedMeasurementLines();
         });
     }
 
 
     /**
-     * Get data extents and scales
+     * Get scales that translate data values to screen pixels
      */
     getScales = (extents, width, height) => {
-        // D3 scales. Can only plot 2 dimensions so higher dimensions are ignored here.
+        // Always two scales (x,y) since we can only plot 2 dimensional data,
+        // even though the algorithm can support any number of dimensions!
         const scaleX = d3.scaleLinear()
-            .domain([extents[0][0], extents[0][1]])
+            .domain([0, extents[0][1]])
             .range([0, width]);
 
         const scaleY = d3.scaleLinear()
-            .domain([extents[1][0], extents[1][1]])
+            .domain([0, extents[1][1]])
             .range([0, height]);
 
         return { x: scaleX, y: scaleY };
@@ -94,24 +68,7 @@ export default class Knn extends Component {
 
 
     /**
-     * Get extent of each dimension [min, max, size]
-     */
-    getExtentsOfTrainingData = data => {
-        const len = data[0].length;
-        // Iterate columns, calculate extent and diff of each
-        const extents = data[0]
-            .filter((d, i) => i < len - 1)
-            .map((d, i) => {
-                const ext = [0, d3.max(data, d => d[i])];
-                ext.push(ext[1] - ext[0]);
-                return ext;
-            });
-        return extents;
-    }
-
-
-    /**
-     * Get distance from every other node for one unknown node
+     * Get distance from unknown node to every training node
      */
     measureDistancesFromUnknown = (node, extents, data) => {
         const distances = [];
@@ -149,24 +106,29 @@ export default class Knn extends Component {
      * Get top k guesses for the unknown node
      */
     guessType = (node, data, distances, typeCol, k) => {
-        var types = {};
+        var typeTallies = {};
 
         // Tally type count of the top K training nodes
         for (let i = 0; i < k; i++) {
             var distanceData = distances[i];
 
-            // Get data element referenced by distanceData, and get it's type
+            // Get data element referenced by distanceData, and get it's type.
+            // distanceData includes a reference index into the trainingData
             var type = data[distanceData[1]][typeCol];
 
-            if (!types[type]) {
-                types[type] = 0;
+            if (!typeTallies[type]) {
+                typeTallies[type] = 0;
             }
 
-            types[type] += 1;
+            typeTallies[type] += 1;
         }
 
-        const guesses = Object.keys(types).map(type => ({ type: type, count: types[type] }));
+        const guesses = Object.keys(typeTallies).map(type => {
+            return { type: type, count: typeTallies[type] };
+        });
 
+
+        // Sort highest tally counts first
         guesses.sort((a, b) => {
             return b.count - a.count
         });
@@ -176,10 +138,11 @@ export default class Knn extends Component {
 
 
     /**
-     * Get index of category column. Assumed to be the last one for now.
+     * Get index of category column.
      */
-    getCategoryColumnIndex = dimensions => {
-        return dimensions.length - 1;
+    getTypeColumnIndex = dimensions => {
+        // Assumed to be the last column for now
+        return dimensions ? dimensions.length - 1 : 0;
     }
 
 
@@ -187,25 +150,32 @@ export default class Knn extends Component {
      * Find all unique category types in the training data
      */
     getUniqueTypes = trainingData => {
-        const { trainingData: { data, dimensions } } = this.props;
-        const typeCol = this.getCategoryColumnIndex(dimensions);
+        if (!trainingData) {
+            return [];
+        }
 
-        const types = data.reduce((acc, d) => {
+        const { dimensions, data } = trainingData;
+        const typeCol = this.getTypeColumnIndex(dimensions);
+
+        const uniqueTypes = data.reduce((acc, d) => {
             acc[d[typeCol]] = true;
             return acc;
         }, {});
 
-        return Object.keys(types);
+        return Object.keys(uniqueTypes);
     }
 
 
     render() {
-        const k = 3;
-        const { trainingData, width, height, pad } = this.props;
+        const { trainingData, k, width, height, pad } = this.props;
         const { unknownNode } = this.state;
-        const { data, dimensions } = trainingData;
 
-        const extents = this.getExtentsOfTrainingData(trainingData.data);
+
+        // Training data contains two array --
+        // #1 dimensions (dimension labels), #2 the training data values
+        const { dimensions, data } = trainingData;
+
+        const extents = getExtents(data);
         const innerWidth = width - (pad * 2);
         const innerHeight = height - (pad * 2);
 
@@ -219,57 +189,74 @@ export default class Knn extends Component {
             .range(d3.schemeCategory10.filter((d, i) => i < typesLen));
 
         // Column index of type column (last)
-        const typeCol = this.getCategoryColumnIndex(dimensions);
+        const typeCol = this.getTypeColumnIndex(dimensions);
 
         // guess type
-        let guessedTypes = [];
+        let guesses = [];
         let distances;
         let radius;
+        let nodeDomainData;
         if (unknownNode) {
-            const nodeDomainData = [scales.x.invert(unknownNode[0]), scales.y.invert(unknownNode[1]), null];
+            // Scale-invert click coordinates to get the domain values of the unknown node
+            nodeDomainData = [scales.x.invert(unknownNode[0]), scales.y.invert(unknownNode[1]), null];
 
+            // Get distance from unknown node to every training node
             distances = this.measureDistancesFromUnknown(nodeDomainData, extents, trainingData.data);
 
-            guessedTypes = this.guessType(unknownNode, data, distances, typeCol, k);
+            // Get a ranked list of guesses
+            guesses = this.guessType(unknownNode, data, distances, typeCol, k);
 
-            // radius of influence
+            // Colculate radius of influence and animate it
             radius = distances[k - 1][0] * innerWidth;
             this.renderAnimatedRadius(unknownNode[0], unknownNode[1], radius);
         }
-
 
         return (
             <div className="knn" style={{ marginLeft: 20 }}>
                 <h3 className="ui header">kNN</h3>
 
+                {/*Render graph*/}
                 <svg className="container" width={width} height={height}>
-                    <text x={width / 2} y={height - 3} textAnchor="middle">{dimensions[0]}</text>
 
+                    {/* Render axis labels */}
+                    <text x={width / 2} y={height - 3} textAnchor="middle">{dimensions[0]}</text>
                     <g transform={`translate(10 ${height / 2})`}>
                         <text textAnchor="middle" transform="rotate(-90)">{dimensions[1]}</text>
                     </g>
 
                     <rect className="border" width={width} height={height} />
+                    <g className="measurement-area" transform={`translate(${pad} ${pad})`}/>
 
                     <g className="plot-area" transform={`translate(${pad} ${pad})`}>
+                        {/* Render a rect to capture mouse clicks */}
                         <rect className="click-area" width={innerWidth} height={innerHeight} style={{ opacity: 0 }} />
+
                         {
+                            /* Render all training data points if we have scales and therefore data available */
                             scales.x &&
-                            trainingData.data.map((d, i) => <circle key={i} cx={scales.x(d[0])} cy={scales.y(d[1])} r="5" style={{ fill: color(d[typeCol]) }} />)
+                                trainingData.data.map((d, i) => <circle key={i} cx={scales.x(d[0])} cy={scales.y(d[1])} r="5" style={{ fill: color(d[typeCol]) }} />)
                         }
 
                         {
+                            /* Render the unknown node if it exists */
                             unknownNode &&
-                            <g className="test-node">
-                                <circle cx={unknownNode[0]} cy={unknownNode[1]} r="5" style={{ fill: '#aaa' }} />
-                            </g>
+                                <g className="test-node">
+                                    <circle cx={unknownNode[0]} cy={unknownNode[1]} r="7" style={{ fill: '#aaa' }} />
+                                </g>
                         }
                     </g>
                 </svg>
 
-                <div className="ui grid result" style={{ width: '50%', marginTop: 30 }}>
+                {/* Render legend and guesses underneath graph */}
+                {
+                    nodeDomainData &&
+                        <div>{`Unknown node: ${dimensions[0]}: ${nodeDomainData[0].toFixed(0)}, ${dimensions[1]}: ${nodeDomainData[1].toFixed(0)}`}</div>
+                }
+
+                <div className="ui grid result" style={{ width, marginTop: 30 }}>
                     <div className="row">
-                        <div className="six wide column">
+                        {/* Render legend */}
+                        <div className="eight wide column">
 
                             <h4 className="ui header">Legend</h4>
                             {
@@ -282,14 +269,15 @@ export default class Knn extends Component {
                             }
                         </div>
 
-                        <div className="six wide column">
+                        {/* Render list of guesses */}
+                        <div className="eight wide column">
 
                             <h4 className="ui header">Guesses</h4>
                             {
-                                guessedTypes.map((d, i) =>
+                                guesses.map((d, i) =>
                                     <div key={i} className="legend">
                                         <div className="legend-box" style={{ backgroundColor: color(d.type) }} />
-                                        <div className="legend-label">{d.type} ({d.count})</div>
+                                        <div className="legend-label">{d.type} (confidence: {(d.count * (100 / k )).toFixed(0)}%)</div>
                                     </div>
                                 )
                             }
@@ -299,6 +287,7 @@ export default class Knn extends Component {
             </div>
         );
     }
+
 
     renderAnimatedRadius(x, y, r) {
         d3.select('.test-node .roi')
@@ -312,7 +301,44 @@ export default class Knn extends Component {
             .style('fill', 'none')
             .style('stroke', '#555')
             .style('stroke-width', 1)
-            .transition()
-            .attr('r', r);
+            .transition().delay(DEMO_ANIM_TIME)
+                .attr('r', r);
+    }
+
+
+    renderAnimatedMeasurementLines = () => {
+        const { trainingData: { data }, width, height, pad } = this.props;
+
+        const extents = getExtents(data);
+        const innerWidth = width - (pad * 2);
+        const innerHeight = height - (pad * 2);
+        const { x: scaleX, y: scaleY }  = this.getScales(extents, innerWidth, innerHeight);
+
+        // Clicked point
+        const p = this.state.unknownNode;
+        const g = d3.select('g.measurement-area');
+
+        // Determine animation increment
+        const len = data.length;
+        const inc = DEMO_ANIM_TIME / len;
+
+        // Draw the measurement lines. All lines are actually rendered
+        // simultaneously but with staggered animation delays
+        data.forEach((d, i) => {
+            const delay = i * inc;
+
+            g.append('line')
+                .attr('x1', p[0])
+                .attr('y1', p[1])
+                .attr('x2', scaleX(d[0]))
+                .attr('y2', scaleY(d[1]))
+                .style('visibility', 'hidden')
+                .style('stroke', 'black')
+
+                .transition().duration(1).delay(delay)
+                    .style('visibility', 'visible')
+                    .transition(1).delay(125)
+                    .remove();
+        });
     }
 }
