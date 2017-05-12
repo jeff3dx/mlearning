@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { PropTypes } from 'prop-types';
 import * as d3 from 'd3';
 import './knn.css';
-import { getExtents } from '../common';
+import { getExtent } from '../common';
 import { TRAINING_DATA } from './training-data';
 
 const DEMO_ANIM_TIME = 1000;
@@ -175,7 +175,7 @@ export default class Knn extends Component {
         // #1 dimensions (dimension labels), #2 the training data values
         const { dimensions, data } = trainingData;
 
-        const extents = getExtents(data);
+        const extents = getExtent(data);
         const innerWidth = width - (pad * 2);
         const innerHeight = height - (pad * 2);
 
@@ -309,7 +309,7 @@ export default class Knn extends Component {
     renderAnimatedMeasurementLines = () => {
         const { trainingData: { data }, width, height, pad } = this.props;
 
-        const extents = getExtents(data);
+        const extents = getExtent(data);
         const innerWidth = width - (pad * 2);
         const innerHeight = height - (pad * 2);
         const { x: scaleX, y: scaleY }  = this.getScales(extents, innerWidth, innerHeight);
