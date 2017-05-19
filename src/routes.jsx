@@ -11,7 +11,7 @@ export default (
   <Router history={browserHistory}>
     <Application>
       <Route path='/knn' component={Knn} />
-      <Route path='/kmeans' component={KMeansClustering} />
+      <Route path='/kmc' component={KMeansClustering} />
     </Application>
   </Router>
 );

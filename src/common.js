@@ -14,7 +14,7 @@ export function getExtent(data) {
         // use D3 extent https://github.com/d3/d3/blob/master/API.md#arrays-d3-array
         const ext = d3.extent(data, d => d[i]);
 
-        // Add on the difference max - min for convenience later
+        // Append the difference (range), max minus min for convenience later
         ext.push(ext[1] - ext[0]);
         return ext;
     });
