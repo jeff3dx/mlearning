@@ -1,27 +1,47 @@
-svg {
-  margin-left: 5px;
+.knn {
+  margin: auto;
+  padding-top: 10px;
 }
 
-.border {
+.knn,
+.knn .ui.header {
+  color: #fff !important;
+}
+
+.knn circle,
+.knn line {
+  stroke: #999;
+  fill: none;
+}
+
+.knn text {
+  fill: #fff;
+}
+
+.knn .training-point {
+  stroke: none;
+}
+
+.knn .border {
   fill: none;
   stroke-width: 1px;
   stroke: #aaa;
 }
 
-.legend {
+.knn .legend {
   margin-bottom: 3px;
 }
 
-.legend .legend-box {
+.knn .legend .legend-box {
   display: inline-block;
   width: 12px;
   height: 12px;
   margin: 0 5px -3px 10px;
 }
 
-.legend .legend-label {
+.knn .legend .legend-label {
   display: inline-block;
-  font-weight: bold;
+  font-weight: regular;
   font-size: 12px;
   margin-bottom: 3px;
 }

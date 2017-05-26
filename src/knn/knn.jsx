@@ -6,6 +6,7 @@ import { getExtent } from "../common";
 import { TRAINING_DATA } from "./training-data";
 
 const DEMO_ANIM_TIME = 1000;
+const MARGIN = 20;
 
 /*
     The basic procedure of this class is as follows:
@@ -277,7 +278,6 @@ export default class Knn extends Component {
             .attr("x2", d => scales.x(d[0]))
             .attr("y2", d => scales.y(d[1]))
             .style("visibility", "hidden")
-            .style("stroke", "black")
             // Reveal each line with a staggered delay
             .transition()
             .duration(1)
@@ -303,7 +303,6 @@ export default class Knn extends Component {
             .attr("cy", scales.y(unknownNode[1]))
             .attr("r", 0)
             .style('fill', "none")
-            .style('stroke', "#000")
             // Animate size
             .transition()
             .delay(DEMO_ANIM_TIME)
@@ -327,10 +326,10 @@ export default class Knn extends Component {
         } = this.state;
 
         return (
-            <div className="knn" style={{ marginLeft: 20 }}>
+            <div className="knn" style={{ paddingLeft: MARGIN, backgroundColor: "#333", width: width + (MARGIN * 2) }}>
                 <h3 className="ui header">kNN</h3>
 
-                <svg className="container" width={width} height={height}>
+                <svg className="container" width={width} height={height} >
                     {/* Render axis labels */}
                     <text x={width / 2} y={height - 3} textAnchor="middle">
                         {dimensions[0]}
@@ -363,6 +362,7 @@ export default class Knn extends Component {
                         scales.x &&
                             trainingData.data.map((d, i) => (
                                 <circle
+                                    className="training-point"
                                     key={i}
                                     cx={scales.x(d[0])}
                                     cy={scales.y(d[1])}

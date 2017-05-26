@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Route } from 'react-router-dom'
 import { browserHistory } from 'history';
 
 import Application from './application';
-import Knn from './knn/knn2';
+import Knn from './knn/knn';
 import KMeansClustering from './k-means-clustering/kmc';
 import Bayes from './bayes/bayes';
 

@@ -1,0 +1,62 @@
+.kmc {
+  margin: auto;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.kmc,
+.kmc .ui.header {
+  color: #fff !important;
+}
+
+.kmc svg {
+    margin-bottom: 20px;
+}
+
+.kmc circle,
+.kmc line {
+  stroke: #999;
+  fill: none;
+}
+
+.kmc text {
+  fill: #fff;
+}
+
+.kmc .mean-point {
+    fill: #f00;
+    stroke: none;
+}
+
+.kmc .training-point {
+  fill: #55f;
+  stroke: none;
+}
+
+.kmc .border {
+  fill: none;
+  stroke-width: 1px;
+  stroke: #aaa;
+}
+
+.kmc .ui.input {
+    margin-bottom: 20px;
+}
+
+.kmc .legend {
+  margin-bottom: 3px;
+}
+
+.kmc .legend .legend-box {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin: 0 5px -3px 10px;
+}
+
+.kmc .legend .legend-label {
+  display: inline-block;
+  font-weight: regular;
+  font-size: 12px;
+  margin-bottom: 3px;
+}
