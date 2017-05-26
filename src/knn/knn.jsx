@@ -1,17 +1,26 @@
-import React, { Component } from 'react';
-import { PropTypes } from 'prop-types';
-import * as d3 from 'd3';
-import './knn.css';
-import { getExtent } from '../common';
-import { TRAINING_DATA } from './training-data';
+import React, { Component } from "react";
+import { PropTypes } from "prop-types";
+import * as d3 from "d3";
+import "./knn.css";
+import { getExtent } from "../common";
+import { TRAINING_DATA } from "./training-data";
 
 const DEMO_ANIM_TIME = 1000;
+
+/*
+    The basic procedure of this class is as follows:
+
+    1. Render underlying HTML structure and training data points. React does this rendering step.
+    2. Wait for click
+    3. Upon click calculate kNN and related data and save to state
+    4. After state is saved and view updates, run animations with appropriate stagger delays. D3 renders this step directly to the DOM.
+*/
 
 export default class Knn extends Component {
     static propTypes = {
         trainingData: PropTypes.object,
         k: PropTypes.number
-    }
+    };
 
     static defaultProps = {
         trainingData: TRAINING_DATA,
@@ -19,57 +28,44 @@ export default class Knn extends Component {
         width: 600,
         height: 600,
         pad: 30
-    }
+    };
 
     state = {
+        color: null,
+        distances: null,
+        extents: null,
+        guesses: null,
+        innerHeight: null,
+        innerWidth: null,
+        roi: null,
+        scales: null,
+        typeCol: null,
+        types: null,
         unknownNode: null
-    }
+    };
 
     componentDidMount() {
         this.setupClick();
     }
 
-
-    /**
-     * Sets a point at the clicked coordinate
-     */
-    setupClick = () => {
-        const self = this;
-
-        d3.select('.click-area').on('click', function () {
-            const coords = d3.mouse(this);
-            const unknown = [
-                coords[0],
-                coords[1],
-                null
-            ]
-            self.setState({ unknownNode: unknown });
-            self.renderAnimatedMeasurementLines();
-        });
-    }
-
-
-    /**
-     * Get scales that translate data values to screen pixels
-     */
+    /* Get scales which translate data values to screen pixels */
     getScales = (extents, width, height) => {
         // Always two scales (x,y) since we can only plot 2 dimensional data,
         // even though the algorithm can support any number of dimensions!
-        const scaleX = d3.scaleLinear()
+        const scaleX = d3
+            .scaleLinear()
             .domain([0, extents[0][1]])
             .range([0, width]);
 
-        const scaleY = d3.scaleLinear()
+        const scaleY = d3
+            .scaleLinear()
             .domain([0, extents[1][1]])
             .range([0, height]);
 
         return { x: scaleX, y: scaleY };
-    }
+    };
 
-
-    /**
-     * Get distance from unknown node to every training node
-     */
+    /* Get distance from unknown node to every training node */
     measureDistancesFromUnknown = (node, extents, data) => {
         const distances = [];
 
@@ -99,12 +95,9 @@ export default class Knn extends Component {
 
         distances.sort((a, b) => a[0] - b[0]);
         return distances;
-    }
+    };
 
-
-    /**
-     * Get top k guesses for the unknown node
-     */
+    /* Get top k guesses for the unknown node */
     guessType = (node, data, distances, typeCol, k) => {
         var typeTallies = {};
 
@@ -127,28 +120,21 @@ export default class Knn extends Component {
             return { type: type, count: typeTallies[type] };
         });
 
-
         // Sort highest tally counts first
         guesses.sort((a, b) => {
-            return b.count - a.count
+            return b.count - a.count;
         });
 
         return guesses;
-    }
+    };
 
-
-    /**
-     * Get index of category column.
-     */
+    /* Get index of category column */
     getTypeColumnIndex = dimensions => {
         // Assumed to be the last column for now
         return dimensions ? dimensions.length - 1 : 0;
-    }
+    };
 
-
-    /**
-     * Find all unique category types in the training data
-     */
+    /* Find all unique category types in the training data */
     getUniqueTypes = trainingData => {
         if (!trainingData) {
             return [];
@@ -163,182 +149,287 @@ export default class Knn extends Component {
         }, {});
 
         return Object.keys(uniqueTypes);
-    }
+    };
 
-
-    render() {
-        const { trainingData, k, width, height, pad } = this.props;
-        const { unknownNode } = this.state;
-
-
-        // Training data contains two array --
-        // #1 dimensions (dimension labels), #2 the training data values
+    /* Before rendering calculate scales for the plot area */
+    componentWillMount() {
+        // Calculate extents and scales and save in state
+        const { trainingData, width, height, pad } = this.props;
         const { dimensions, data } = trainingData;
 
         const extents = getExtent(data);
-        const innerWidth = width - (pad * 2);
-        const innerHeight = height - (pad * 2);
-
+        const innerWidth = width - pad * 2;
+        const innerHeight = height - pad * 2;
         const scales = this.getScales(extents, innerWidth, innerHeight);
 
-        // Color for each type
+        // Get unique types in the data and assign a color to each
         const types = this.getUniqueTypes(trainingData);
         const typesLen = types.length;
-        const color = d3.scaleOrdinal()
+        const color = d3
+            .scaleOrdinal()
             .domain(types)
             .range(d3.schemeCategory10.filter((d, i) => i < typesLen));
 
-        // Column index of type column (last)
         const typeCol = this.getTypeColumnIndex(dimensions);
 
-        // guess type
-        let guesses = [];
-        let distances;
-        let radius;
-        let nodeDomainData;
-        if (unknownNode) {
-            // Scale-invert click coordinates to get the domain values of the unknown node
-            nodeDomainData = [scales.x.invert(unknownNode[0]), scales.y.invert(unknownNode[1]), null];
+        // Save state for rendering
+        this.setState({
+            extents,
+            innerWidth,
+            innerHeight,
+            scales,
+            types,
+            color,
+            typeCol
+        });
+    }
 
-            // Get distance from unknown node to every training node
-            distances = this.measureDistancesFromUnknown(nodeDomainData, extents, trainingData.data);
+    /* Initialize the click handler */
+    setupClick = () => {
+        const self = this;
+        d3.select(".click-area").on("click", function() {
+            const coords = d3.mouse(this);
+            self.onClick(coords[0], coords[1]);
+        });
+    };
 
-            // Get a ranked list of guesses
-            guesses = this.guessType(unknownNode, data, distances, typeCol, k);
+    /* Upon click calculate guesses and related data and save to state */
+    onClick = (dx, dy) => {
+        const { trainingData, k } = this.props;
 
-            // Colculate radius of influence and animate it
-            radius = distances[k - 1][0] * innerWidth;
-            this.renderAnimatedRadius(unknownNode[0], unknownNode[1], radius);
-        }
+        const { extents, innerWidth, scales, typeCol } = this.state;
 
-        return (
-            <div className="knn" style={{ marginLeft: 20 }}>
-                <h3 className="ui header">kNN</h3>
+        // calculate kNN
+        const unknownNode = [scales.x.invert(dx), scales.y.invert(dy), null];
 
-                {/*Render graph*/}
-                <svg className="container" width={width} height={height}>
-
-                    {/* Render axis labels */}
-                    <text x={width / 2} y={height - 3} textAnchor="middle">{dimensions[0]}</text>
-                    <g transform={`translate(10 ${height / 2})`}>
-                        <text textAnchor="middle" transform="rotate(-90)">{dimensions[1]}</text>
-                    </g>
-
-                    <rect className="border" width={width} height={height} />
-                    <g className="measurement-area" transform={`translate(${pad} ${pad})`}/>
-
-                    <g className="plot-area" transform={`translate(${pad} ${pad})`}>
-                        {/* Render a rect to capture mouse clicks */}
-                        <rect className="click-area" width={innerWidth} height={innerHeight} style={{ opacity: 0 }} />
-
-                        {
-                            /* Render all training data points if we have scales and therefore data available */
-                            scales.x &&
-                                trainingData.data.map((d, i) => <circle key={i} cx={scales.x(d[0])} cy={scales.y(d[1])} r="5" style={{ fill: color(d[typeCol]) }} />)
-                        }
-
-                        {
-                            /* Render the unknown node if it exists */
-                            unknownNode &&
-                                <g className="test-node">
-                                    <circle cx={unknownNode[0]} cy={unknownNode[1]} r="7" style={{ fill: '#aaa' }} />
-                                </g>
-                        }
-                    </g>
-                </svg>
-
-                {/* Render legend and guesses underneath graph */}
-                {
-                    nodeDomainData &&
-                        <div>{`Unknown node: ${dimensions[0]}: ${nodeDomainData[0].toFixed(0)}, ${dimensions[1]}: ${nodeDomainData[1].toFixed(0)}`}</div>
-                }
-
-                <div className="ui grid result" style={{ width, marginTop: 30 }}>
-                    <div className="row">
-                        {/* Render legend */}
-                        <div className="eight wide column">
-
-                            <h4 className="ui header">Legend</h4>
-                            {
-                                types.map((d, i) =>
-                                    <div key={i} className="legend">
-                                        <div className="legend-box" style={{ backgroundColor: color(i) }} />
-                                        <div className="legend-label">{d}</div>
-                                    </div>
-                                )
-                            }
-                        </div>
-
-                        {/* Render list of guesses */}
-                        <div className="eight wide column">
-
-                            <h4 className="ui header">Guesses</h4>
-                            {
-                                guesses.map((d, i) =>
-                                    <div key={i} className="legend">
-                                        <div className="legend-box" style={{ backgroundColor: color(d.type) }} />
-                                        <div className="legend-label">{d.type} (confidence: {(d.count * (100 / k )).toFixed(0)}%)</div>
-                                    </div>
-                                )
-                            }
-                        </div>
-                    </div>
-                </div>
-            </div>
+        // Get distance from unknown node to every training node
+        const distances = this.measureDistancesFromUnknown(
+            unknownNode,
+            extents,
+            trainingData.data
         );
+
+        // Run the algorithm to get a ranked list of guesses
+        const guesses = this.guessType(
+            unknownNode,
+            trainingData.data,
+            distances,
+            typeCol,
+            k
+        );
+
+        // Calculate radius of influence
+        const roi = distances[k - 1][0] * innerWidth;
+
+        this.setState({
+            unknownNode,
+            distances,
+            guesses,
+            roi
+        });
+    };
+
+    /* Now that calculation data is saved to state render click feedback (click point, measurement lines, radius of influence) */
+    componentDidUpdate() {
+        this.renderUnknownNode();
+        this.renderMeasurementLines();
+        this.renderRadiusOfInfluence();
     }
 
+    /* Render unknown node directly to the DOM with D3 */
+    renderUnknownNode() {
+        const { unknownNode, scales } = this.state;
 
-    renderAnimatedRadius(x, y, r) {
-        d3.select('.test-node .roi')
-            .remove();
+        d3.select(".unknown-group .unknown-node").remove();
 
-        d3.select('.test-node').append('circle')
-            .attr('class', 'roi')
-            .attr('cx', x)
-            .attr('cy', y)
-            .attr('r', 0)
-            .style('fill', 'none')
-            .style('stroke', '#555')
-            .style('stroke-width', 1)
-            .transition().delay(DEMO_ANIM_TIME)
-                .attr('r', r);
+        d3
+            .selectAll(".unknown-group")
+            .append("circle")
+            .attr("class", "unknown-node")
+            .attr("cx", scales.x(unknownNode[0]))
+            .attr("cy", scales.y(unknownNode[1]))
+            .attr("r", 7)
+            .style("fill", "#aaa");
     }
 
-
-    renderAnimatedMeasurementLines = () => {
-        const { trainingData: { data }, width, height, pad } = this.props;
-
-        const extents = getExtent(data);
-        const innerWidth = width - (pad * 2);
-        const innerHeight = height - (pad * 2);
-        const { x: scaleX, y: scaleY }  = this.getScales(extents, innerWidth, innerHeight);
-
-        // Clicked point
-        const p = this.state.unknownNode;
-        const g = d3.select('g.measurement-area');
+    /* Render measurement lines directly to the DOM with D3 */
+    renderMeasurementLines = () => {
+        const { trainingData: { data } } = this.props;
+        const { scales, unknownNode } = this.state;
 
         // Determine animation increment
         const len = data.length;
         const inc = DEMO_ANIM_TIME / len;
 
-        // Draw the measurement lines. All lines are actually rendered
-        // simultaneously but with staggered animation delays
-        data.forEach((d, i) => {
-            const delay = i * inc;
+        // D3 data bind
+        const update = d3
+            .select("g.measurement-lines")
+            .selectAll(".measurement-line")
+            .data(data);
 
-            g.append('line')
-                .attr('x1', p[0])
-                .attr('y1', p[1])
-                .attr('x2', scaleX(d[0]))
-                .attr('y2', scaleY(d[1]))
-                .style('visibility', 'hidden')
-                .style('stroke', 'black')
+        // Draw each line invisible
+        update
+            .enter()
+            .append("line")
+            .attr("class", "measurement-line")
+            .attr("x1", scales.x(unknownNode[0]))
+            .attr("y1", scales.y(unknownNode[1]))
+            .attr("x2", d => scales.x(d[0]))
+            .attr("y2", d => scales.y(d[1]))
+            .style("visibility", "hidden")
+            .style("stroke", "black")
+            // Reveal each line with a staggered delay
+            .transition()
+            .duration(1)
+            .delay((d, i) => i * inc)
+            .style("visibility", "visible")
+            // After a short delay delete the line
+            .transition(1)
+            .delay(125)
+            .remove();
+    };
 
-                .transition().duration(1).delay(delay)
-                    .style('visibility', 'visible')
-                    .transition(1).delay(125)
-                    .remove();
-        });
+    /* Render radius of influence directly to the DOM with D3 */
+    renderRadiusOfInfluence = () => {
+        const { unknownNode, scales, roi } = this.state;
+
+        d3.select(".unknown-group .radius-of-influence").remove();
+
+        d3
+            .select(".unknown-group")
+            .append("circle")
+            .attr("class", "radius-of-influence")
+            .attr("cx", scales.x(unknownNode[0]))
+            .attr("cy", scales.y(unknownNode[1]))
+            .attr("r", 0)
+            .style('fill', "none")
+            .style('stroke', "#000")
+            // Animate size
+            .transition()
+            .delay(DEMO_ANIM_TIME)
+            .duration(500)
+            .attr("r", roi);
+    };
+
+    /* React render hook renders the underlying HTML structure whenever state changes.
+       We render click feedback and results with the D3 functions above */
+    render() {
+        const { trainingData, k, width, height, pad } = this.props;
+        const { dimensions } = trainingData;
+
+        const {
+            unknownNode,
+            scales,
+            typeCol,
+            color,
+            types,
+            guesses
+        } = this.state;
+
+        return (
+            <div className="knn" style={{ marginLeft: 20 }}>
+                <h3 className="ui header">kNN</h3>
+
+                <svg className="container" width={width} height={height}>
+                    {/* Render axis labels */}
+                    <text x={width / 2} y={height - 3} textAnchor="middle">
+                        {dimensions[0]}
+                    </text>
+                    <g transform={`translate(10 ${height / 2})`}>
+                        <text textAnchor="middle" transform="rotate(-90)">
+                            {dimensions[1]}
+                        </text>
+                    </g>
+
+                    <rect className="border" width={width} height={height} />
+                    <g
+                        className="measurement-area"
+                        transform={`translate(${pad} ${pad})`}
+                    />
+
+                    <g
+                        className="plot-area"
+                        transform={`translate(${pad} ${pad})`}
+                    >
+                        {/* Rectangle to capture mouse clicks */}
+                        <rect
+                            className="click-area"
+                            width={innerWidth}
+                            height={innerHeight}
+                            style={{ opacity: 0 }}
+                        />
+
+                        {/* Render all training points */
+                        scales.x &&
+                            trainingData.data.map((d, i) => (
+                                <circle
+                                    key={i}
+                                    cx={scales.x(d[0])}
+                                    cy={scales.y(d[1])}
+                                    r="5"
+                                    style={{ fill: color(d[typeCol]) }}
+                                />
+                            ))}
+
+                        <g className="measurement-lines" />
+                        <g className="unknown-group" />
+
+                    </g>
+                </svg>
+
+                {/* Render legend and guesses underneath graph */}
+                {unknownNode &&
+                    <div
+                    >{`Unknown node: ${dimensions[0]}: ${unknownNode[0].toFixed(0)}, ${dimensions[1]}: ${unknownNode[1].toFixed(0)}`}</div>}
+
+                <div
+                    className="ui grid result"
+                    style={{ width, marginTop: 30 }}
+                >
+                    <div className="row">
+                        {/* Render legend */}
+                        <div className="eight wide column">
+
+                            <h4 className="ui header">Legend</h4>
+                            {types.map((d, i) => (
+                                <div key={i} className="legend">
+                                    <div
+                                        className="legend-box"
+                                        style={{ backgroundColor: color(i) }}
+                                    />
+                                    <div className="legend-label">{d}</div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Render list of guesses */
+                        guesses &&
+                            <div className="eight wide column">
+
+                                <h4 className="ui header">Guesses</h4>
+                                {guesses.map((d, i) => (
+                                    <div key={i} className="legend">
+                                        <div
+                                            className="legend-box"
+                                            style={{
+                                                backgroundColor: color(d.type)
+                                            }}
+                                        />
+                                        <div className="legend-label">
+                                            {d.type}
+                                            {" "}
+                                            (confidence:
+                                            {" "}
+                                            {(d.count * (100 / k)).toFixed(0)}
+                                            %)
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>}
+
+                    </div>
+                </div>
+            </div>
+        );
     }
 }
