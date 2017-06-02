@@ -8,11 +8,14 @@ import { TRAINING_DATA } from "./training-data";
 const MIN_COLUMN = 0;
 const MAX_COLUMN = 1;
 const RANGE_COLUMN = 2;
-
 const MEANS_ANIM_DURATION = 1000;
 const ITERATION_DELAY = 2000;
-
 const MARGIN = 20;
+
+function randomBetween(min,max) {
+    return Math.floor(Math.random()*(max-min+1)+min);
+}
+
 
 /*
     Algorithm:
@@ -44,11 +47,11 @@ export default class Knn extends Component {
     };
 
     generateRandomTargetData() {
-        const count = Math.floor(Math.random() * 30);
+        const count = randomBetween(15, 30);
         const data = [];
 
         for (let i = 0; i < count; i++) {
-            data.push([Math.random() * 10, Math.random() * 10]);
+            data.push([randomBetween(1, 10), randomBetween(1, 10)]);
         }
         return data;
     }
@@ -77,6 +80,7 @@ export default class Knn extends Component {
         while (k--) {
             var mean = [];
 
+            // Generate coordinates in all dimensions
             for (let dimensionIndex in extents) {
                 mean[dimensionIndex] =
                     extents[dimensionIndex][MIN_COLUMN] +
@@ -321,92 +325,114 @@ export default class Knn extends Component {
     };
 
     handleKChange = e => {
-      this.setState({ k: e.target.value });
-    }
+        this.setState({ k: e.target.value });
+    };
 
     render() {
         const { trainingData, scales } = this.state;
         const { width, height, pad } = this.props;
 
         return (
-            <div className="kmc" style={{ paddingLeft: MARGIN, backgroundColor: "#333", width: width + (MARGIN * 2) }}>
-                <h3 className="ui header">k Means Clustering</h3>
+            <div>
+                <h1 className="ui header">k Means Clustering</h1>
 
-                {/* Render graph */}
-                <svg className="container" width={width} height={height}>
+                <p>
+                    "k" is the number of clusters to find. For "k Means Clustering" this must be predetermined.
+                </p>
 
-                    <rect className="border" width={width} height={height} />
-                    <g
-                        className="measurement-area"
-                        transform={`translate(${pad} ${pad})`}
-                    />
+                <div
+                    className="kmc"
+                    style={{
+                        paddingLeft: MARGIN,
+                        backgroundColor: "#333",
+                        width: width + MARGIN * 2,
+                        marginBottom: 50
+                    }}
+                >
 
-                    <g
-                        className="assignments-plot-area"
-                        transform={`translate(${pad} ${pad})`}
-                    />
+                    {/* Render graph */}
+                    <svg className="container" width={width} height={height}>
 
-                    {/* Render all training data points */}
-                    <g
-                        className="plot-area"
-                        transform={`translate(${pad} ${pad})`}
-                    >
-                        {scales &&
-                            trainingData.map((d, i) => (
-                                <circle
-                                    className="training-point"
-                                    key={i}
-                                    cx={scales.x(d[0])}
-                                    cy={scales.y(d[1])}
-                                    r="5"
-                                    style={{ fill: "#55f" }}
-                                />
-                            ))}
-                    </g>
+                        <rect
+                            className="border"
+                            width={width}
+                            height={height}
+                        />
+                        <g
+                            className="measurement-area"
+                            transform={`translate(${pad} ${pad})`}
+                        />
 
-                    <g
-                        className="means-plot-area"
-                        transform={`translate(${pad} ${pad})`}
-                    />
+                        <g
+                            className="assignments-plot-area"
+                            transform={`translate(${pad} ${pad})`}
+                        />
 
-                </svg>
+                        {/* Render all training data points */}
+                        <g
+                            className="plot-area"
+                            transform={`translate(${pad} ${pad})`}
+                        >
+                            {scales &&
+                                trainingData.map((d, i) => (
+                                    <circle
+                                        className="training-point"
+                                        key={i}
+                                        cx={scales.x(d[0])}
+                                        cy={scales.y(d[1])}
+                                        r="5"
+                                        style={{ fill: "#55f" }}
+                                    />
+                                ))}
+                        </g>
 
-                <br />
+                        <g
+                            className="means-plot-area"
+                            transform={`translate(${pad} ${pad})`}
+                        />
 
-                <div>
-                    <button
-                        className="ui button"
-                        onClick={this.stepPlotTraining}
-                        style={{ width: 220, textAlign: "left" }}
-                    >
-                        1. Plot random data
-                    </button>
+                    </svg>
+
+                    <br />
+
+                    <div>
+                        <button
+                            className="ui button"
+                            onClick={this.stepPlotTraining}
+                            style={{ width: 220, textAlign: "left" }}
+                        >
+                            1. Plot random data
+                        </button>
+                    </div>
+                    <br />
+                    <div className="ui left labeled input">
+                        <label className="ui label">k =</label>
+                        <input
+                            value={this.state.k}
+                            onChange={this.handleKChange}
+                        />
+                    </div>
+                    <div>
+                        <button
+                            className="ui button"
+                            onClick={this.stepGenerateMeans}
+                            style={{ width: 220, textAlign: "left" }}
+                        >
+                            2. Plot random mean points
+                        </button>
+                    </div>
+                    <br />
+                    <div>
+                        <button
+                            className="ui button"
+                            onClick={this.stepFindCentroids}
+                            style={{ width: 220, textAlign: "left" }}
+                        >
+                            3. Iterate centeroids
+                        </button>
+                    </div>
+
                 </div>
-                <br />
-                <div className="ui left labeled input">
-                  <label className="ui label">k =</label>
-                  <input value={this.state.k} onChange={this.handleKChange}/>
-                </div>
-                <div>
-                    <button
-                        className="ui button"
-                        onClick={this.stepGenerateMeans}
-                        style={{ width: 220, textAlign: "left" }}
-                    >
-                        2. Plot random mean points
-                    </button>
-                </div>
-                <br />
-                <div>
-                    <button
-                        className="ui button"
-                        onClick={this.stepFindCentroids}
-                        style={{ width: 220, textAlign: "left" }}
-                    >
-                        3. Iterate centeroids
-                    </button>
-                </div>
-
             </div>
         );
     }

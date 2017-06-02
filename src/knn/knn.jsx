@@ -302,7 +302,7 @@ export default class Knn extends Component {
             .attr("cx", scales.x(unknownNode[0]))
             .attr("cy", scales.y(unknownNode[1]))
             .attr("r", 0)
-            .style('fill', "none")
+            .style("fill", "none")
             // Animate size
             .transition()
             .delay(DEMO_ANIM_TIME)
@@ -326,107 +326,151 @@ export default class Knn extends Component {
         } = this.state;
 
         return (
-            <div className="knn" style={{ paddingLeft: MARGIN, backgroundColor: "#333", width: width + (MARGIN * 2) }}>
-                <h3 className="ui header">kNN</h3>
+            <div>
+                <h1 className="ui header">kNN</h1>
+                <p>
+                    Determine if a layout is a house, apartment, or loft, based on sqft area and number of rooms.
+                </p>
 
-                <svg className="container" width={width} height={height} >
-                    {/* Render axis labels */}
-                    <text x={width / 2} y={height - 3} textAnchor="middle">
-                        {dimensions[0]}
-                    </text>
-                    <g transform={`translate(10 ${height / 2})`}>
-                        <text textAnchor="middle" transform="rotate(-90)">
-                            {dimensions[1]}
-                        </text>
-                    </g>
+                <p>
+                    "k" is the number of close points to find. For this demo it's 3.
+                </p>
 
-                    <rect className="border" width={width} height={height} />
-                    <g
-                        className="measurement-area"
-                        transform={`translate(${pad} ${pad})`}
-                    />
+                <p>
+                    1. <strong>Click to set a test point</strong>
+                </p>
 
-                    <g
-                        className="plot-area"
-                        transform={`translate(${pad} ${pad})`}
-                    >
-                        {/* Rectangle to capture mouse clicks */}
-                        <rect
-                            className="click-area"
-                            width={innerWidth}
-                            height={innerHeight}
-                            style={{ opacity: 0 }}
-                        />
+                <p>
+                    2. Distance to every training point is measured
+                </p>
 
-                        {/* Render all training points */
-                        scales.x &&
-                            trainingData.data.map((d, i) => (
-                                <circle
-                                    className="training-point"
-                                    key={i}
-                                    cx={scales.x(d[0])}
-                                    cy={scales.y(d[1])}
-                                    r="5"
-                                    style={{ fill: color(d[typeCol]) }}
-                                />
-                            ))}
+                <p>
+                    3. Winner is the best out of "k" closest training points
+                </p>
 
-                        <g className="measurement-lines" />
-                        <g className="unknown-group" />
-
-                    </g>
-                </svg>
-
-                {/* Render legend and guesses underneath graph */}
-                {unknownNode &&
-                    <div
-                    >{`Unknown node: ${dimensions[0]}: ${unknownNode[0].toFixed(0)}, ${dimensions[1]}: ${unknownNode[1].toFixed(0)}`}</div>}
+                <p>
+                    Circle is the area of influence of the training points used to determine the final guess
+                </p>
 
                 <div
-                    className="ui grid result"
-                    style={{ width, marginTop: 30 }}
+                    className="knn"
+                    style={{
+                        paddingLeft: MARGIN,
+                        backgroundColor: "#333",
+                        width: width + MARGIN * 2,
+                        marginBottom: 50
+                    }}
                 >
-                    <div className="row">
-                        {/* Render legend */}
-                        <div className="eight wide column">
 
-                            <h4 className="ui header">Legend</h4>
-                            {types.map((d, i) => (
-                                <div key={i} className="legend">
-                                    <div
-                                        className="legend-box"
-                                        style={{ backgroundColor: color(i) }}
+                    <svg className="container" width={width} height={height}>
+                        {/* Render axis labels */}
+                        <text x={width / 2} y={height - 3} textAnchor="middle">
+                            {dimensions[0]}
+                        </text>
+                        <g transform={`translate(10 ${height / 2})`}>
+                            <text textAnchor="middle" transform="rotate(-90)">
+                                {dimensions[1]}
+                            </text>
+                        </g>
+
+                        <rect
+                            className="border"
+                            width={width}
+                            height={height}
+                        />
+                        <g
+                            className="measurement-area"
+                            transform={`translate(${pad} ${pad})`}
+                        />
+
+                        <g
+                            className="plot-area"
+                            transform={`translate(${pad} ${pad})`}
+                        >
+                            {/* Rectangle to capture mouse clicks */}
+                            <rect
+                                className="click-area"
+                                width={innerWidth}
+                                height={innerHeight}
+                                style={{ opacity: 0 }}
+                            />
+
+                            {/* Render all training points */
+                            scales.x &&
+                                trainingData.data.map((d, i) => (
+                                    <circle
+                                        className="training-point"
+                                        key={i}
+                                        cx={scales.x(d[0])}
+                                        cy={scales.y(d[1])}
+                                        r="5"
+                                        style={{ fill: color(d[typeCol]) }}
                                     />
-                                    <div className="legend-label">{d}</div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
 
-                        {/* Render list of guesses */
-                        guesses &&
+                            <g className="measurement-lines" />
+                            <g className="unknown-group" />
+
+                        </g>
+                    </svg>
+
+                    {/* Render legend and guesses underneath graph */}
+                    {unknownNode &&
+                        <div
+                        >{`Unknown node: ${dimensions[0]}: ${unknownNode[0].toFixed(0)}, ${dimensions[1]}: ${unknownNode[1].toFixed(0)}`}</div>}
+
+                    <div
+                        className="ui grid result"
+                        style={{ width, marginTop: 30 }}
+                    >
+                        <div className="row">
+                            {/* Render legend */}
                             <div className="eight wide column">
 
-                                <h4 className="ui header">Guesses</h4>
-                                {guesses.map((d, i) => (
+                                <h4 className="ui header">Legend</h4>
+                                {types.map((d, i) => (
                                     <div key={i} className="legend">
                                         <div
                                             className="legend-box"
                                             style={{
-                                                backgroundColor: color(d.type)
+                                                backgroundColor: color(i)
                                             }}
                                         />
-                                        <div className="legend-label">
-                                            {d.type}
-                                            {" "}
-                                            (confidence:
-                                            {" "}
-                                            {(d.count * (100 / k)).toFixed(0)}
-                                            %)
-                                        </div>
+                                        <div className="legend-label">{d}</div>
                                     </div>
                                 ))}
-                            </div>}
+                            </div>
 
+                            {/* Render list of guesses */
+                            guesses &&
+                                <div className="eight wide column">
+
+                                    <h4 className="ui header">Guesses</h4>
+                                    {guesses.map((d, i) => (
+                                        <div key={i} className="legend">
+                                            <div
+                                                className="legend-box"
+                                                style={{
+                                                    backgroundColor: color(
+                                                        d.type
+                                                    )
+                                                }}
+                                            />
+                                            <div className="legend-label">
+                                                {d.type}
+                                                {" "}
+                                                (confidence:
+                                                {" "}
+                                                {(d.count * (100 / k)).toFixed(
+                                                    0
+                                                )}
+                                                %)
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>}
+
+                        </div>
                     </div>
                 </div>
             </div>

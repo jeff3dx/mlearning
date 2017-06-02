@@ -1,5 +1,9 @@
 @import url('../public/semantic/semantic.css');
 
+body {
+  padding-left: 20px;
+}
+
 .application-title {
   margin-bottom: 20px;
 }

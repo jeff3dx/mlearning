@@ -7,6 +7,7 @@ import Application from './application';
 import Knn from './knn/knn';
 import KMeansClustering from './k-means-clustering/kmc';
 import Bayes from './bayes/bayes';
+import Sentiment from './sentiment/sentiment';
 
 export default (
   <Router history={browserHistory}>
@@ -14,6 +15,7 @@ export default (
       <Route path='/knn' component={Knn} />
       <Route path='/kmc' component={KMeansClustering} />
       <Route path='/bayes' component={Bayes} />
+      <Route path='/sentiment' component={Sentiment} />
     </Application>
   </Router>
 );
