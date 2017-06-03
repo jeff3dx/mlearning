@@ -3,6 +3,7 @@ import { negatives } from "./negatives";
 import { positives } from "./positives";
 import { stemmer } from "./stemmer.min";
 import { getBayes, getStorage } from "./bayes";
+import * as d3 from "d3";
 
 /*
 The following is not free software. You may use it for educational purposes, but you may not redistribute or use it commercially.
@@ -97,8 +98,11 @@ function trainAndTest(Bayes, onProgressFn) {
 
     // Now we guess. Look at the remainder of the data set and test each of those.
     for (let i = split; i < length; i++) {
-        var negResult = Bayes.extractWinner(Bayes.guess(negatives[i]));
-        var posResult = Bayes.extractWinner(Bayes.guess(positives[i]));
+        var netGuess = Bayes.guess(negatives[i]);
+        var negResult = Bayes.extractWinner(netGuess.scores);
+
+        var posGuess = Bayes.guess(positives[i]);
+        var posResult = Bayes.extractWinner(posGuess.scores);
 
         // Probability less than 75%? Skip it. No sense in making guesses that we know are uncertain.
         if (negResult.score < 0.75) {
@@ -130,7 +134,8 @@ export default class Sentiment extends Component {
         resultLabel: "",
         resultScore: "",
         Bayes: setupClassifier(),
-        trainingProgress: 0
+        trainingProgress: 0,
+        wordicities: []
     };
 
     onTestTextChange = e => {
@@ -139,11 +144,14 @@ export default class Sentiment extends Component {
 
     onClick = () => {
         const { testText, Bayes } = this.state;
-        var result = Bayes.extractWinner(Bayes.guess(testText));
+
+        const { scores, wordicities } = Bayes.guess(testText);
+        var result = Bayes.extractWinner(scores);
 
         const resultLabel = result.label;
         const resultScore = Math.round(100 * result.score);
-        this.setState({ resultLabel, resultScore });
+
+        this.setState({ resultLabel, resultScore, wordicities });
     };
 
     onTrain = () => {
@@ -162,8 +170,14 @@ export default class Sentiment extends Component {
             testText,
             resultLabel,
             resultScore,
-            trainingProgress
+            trainingProgress,
+            wordicities
         } = this.state;
+
+        const colorScale = d3
+            .scaleLinear()
+            .domain([-1, 0, 1])
+            .range(["#f00", "#ff0", "#0f0"]);
 
         return (
             <div>
@@ -218,6 +232,19 @@ export default class Sentiment extends Component {
 
                     <h2>{resultLabel}</h2>
                     <h2>{resultScore}% accuracy</h2>
+
+                    <h2>Wordicities</h2>
+                    {
+                        wordicities.map(d => {
+                            const colorMag = 0 - d.neg + d.pos;
+                            const color = colorScale(colorMag);
+
+                            return (
+                                <span style={{ color, fontSize: 24 }}>{d.word}{" "}</span>
+                            );
+                        })
+                    }
+
                 </div>
             </div>
         );

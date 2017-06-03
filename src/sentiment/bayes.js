@@ -151,6 +151,7 @@ export const getBayes = function () {
         var docInverseCounts = {};
         var scores = {};
         var labelProbability = {};
+        var wordicities = {};
 
         for (var j = 0; j < labels.length; j++) {
             var label = labels[j];
@@ -183,10 +184,23 @@ export const getBayes = function () {
                }
                 logSum += (Math.log(1 - wordicity) - Math.log(wordicity));
                 log(label + "icity of " + word + ": " + wordicity);
+
+                // Save wordicities for datavis
+                if (!wordicities.hasOwnProperty(word)) {
+                    wordicities[word] = { index: i };
+                }
+                if (label === 'negative') {
+                    wordicities[word].neg = wordicity;
+                } else {
+                    wordicities[word].pos = wordicity;
+                }
             }
             scores[label] = 1 / ( 1 + Math.exp(logSum) );
         }
-        return scores;
+
+        const wordicitiesArray = Object.keys(wordicities).map(d => ({ index: wordicities[d].index, word: d, neg: wordicities[d].neg, pos: wordicities[d].pos }));
+        wordicitiesArray.sort((a,b) => a.index - b.index);
+        return { scores, wordicities: wordicitiesArray };
     };
 
     Bayes.extractWinner = function (scores) {

@@ -5334,4 +5334,6 @@ export var positives = [
 "mazel tov to a film about a family's joyous life acting on the yiddish stage . ",
 "standing in the shadows of motown is the best kind of documentary , one that makes a depleted yesterday feel very much like a brand-new tomorrow . ",
 "it's nice to see piscopo again after all these years , and chaykin and headly are priceless . ",
-"provides a porthole into that noble , trembling incoherence that defines us all . "];
+"provides a porthole into that noble , trembling incoherence that defines us all . ",
+"I wouldn't be surprised if some observers say Pitt made huge miscalculations in his acting choices with the result being the worst performance of his career - but I found it to be a brazenly effective piece of work, well-suited to the material. "
+];
