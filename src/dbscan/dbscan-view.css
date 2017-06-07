@@ -1,0 +1,36 @@
+body {
+    margin: 0;
+}
+
+.dbscan {
+    background-color: rgb(51, 51, 51);
+    color: #fff;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 20px;
+}
+
+.dbscan .centered-panel {
+    width: 820px;
+    margin: auto;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 20px;
+}
+
+.dbscan svg > rect {
+    fill: rgb(51, 51, 51);
+    stroke: rgb(91, 91, 91);
+    stroke-width: 1px;
+}
+
+.dbscan .data-point {
+    stroke: none;
+    fill: #888;
+}
+
+.dbscan .epsilon {
+    stroke: #555;
+    stroke-width: 1px;
+    fill: none
+}

@@ -33,6 +33,16 @@ export default class App extends Component {
                 </p>
                 <p>
                     <NavLink
+                        to="/dbscan"
+                        activeStyle={{
+                            fontWeight: "bold"
+                        }}
+                    >
+                        DBSCAN (clustering)
+                    </NavLink>
+                </p>
+                <p>
+                    <NavLink
                         to="/bayes"
                         activeStyle={{
                             fontWeight: "bold"
