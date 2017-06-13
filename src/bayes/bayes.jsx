@@ -1,7 +1,11 @@
+/*
+Special thanks to Burak Kanber. This code was heavily influenced by the article
+https://www.burakkanber.com/blog/machine-learning-in-other-languages-introduction/ by Burak Kanber.
+*/
+
 import React, { Component } from "react";
 import { PropTypes } from "prop-types";
 import "./bayes.css";
-import Equation from "./equation.png";
 import { TRAINING_DOCUMENTS } from "./training-documents";
 
 export default class BayesDemo extends Component {
@@ -300,96 +304,74 @@ export default class BayesDemo extends Component {
         const stems = Object.keys(slc).map(key => ({ key, value: slc[key] }));
 
         return (
-            <div>
+            <div className="dark-panel">
                 <h1 className="ui header">Naive Bayes Classifier</h1>
 
-                <div style={{ width: 500, margin: "auto" }}>
-                    <div><strong>The math if you're interested:</strong></div>
-                    <img src={Equation} alt="" />
-                </div>
+                <div className="centered-panel">
+                    <p>
+                        Uses Bayes Theorem to determine the language of the input text based on the training data. Each word is evaluated independently (naive).
+                    </p>
 
-                <div
-                    style={{
-                        color: "#fff",
-                        margin: "auto",
-                        padding: 10,
-                        backgroundColor: "#333",
-                        width: "50%",
-                        minWidth: 500
-                    }}
-                >
                     <textarea
                         id="test_phrase"
                         placeholder="Enter English, Spanish, or French text here."
                         style={{
                             color: "#000",
-                            width: "90%",
-                            margin: "auto auto 20px auto"
+                            width: 655,
+                            height: 256,
+                            marginLeft: 0
                         }}
                     />
-
-                    {this.renderSteps()}
 
                     <button
                         className="ui button"
                         id="test_button"
                         onClick={this.go}
                     >
-                        Guess Language
+                        Train, then Guess Language
                     </button>
 
                     <h2 id="test_result">{displayLabel}</h2>
 
                     <h2 id="test_probability">{displayScore}</h2>
 
-                    <h2>Wordicities</h2>
-                    <div className="ui grid" style={{ width: "75%" }}>
-                        {this.state.wordicityMessages.map((m, i) => {
-                            return (
-                                <div key={i} className="row">
-                                    <div className="five wide column">
-                                        {m.lang}-icity
-                                    </div>
-                                    <div className="five wide column">
-                                        of&nbsp;"{m.word}"
-                                    </div>
-                                    <div className="five wide column">
-                                        =&nbsp;{m.value.toFixed(2)}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    <h2>Stems</h2>
-                    <ul>
-                        {stems.map(d => (
-                            <li key={d.key}>{`${d.key} = ${d.value}`}</li>
-                        ))}
-                    </ul>
-
+                    {
+                        this.state.wordicityMessages && this.state.wordicityMessages.length > 0 &&
+                        <div>
+                            <h2>Result Details</h2>
+                            <table>
+                                {this.state.wordicityMessages.map((m, i) => {
+                                    return (
+                                        <tr key={i}>
+                                            <td>
+                                                {m.lang}-icity
+                                            </td>
+                                            <td>
+                                                &nbsp;of&nbsp;"{m.word}"&nbsp;
+                                            </td>
+                                            <td>
+                                                =&nbsp;{m.value.toFixed(2)}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </table>
+                        </div>
+                    }
                 </div>
+
+                <h2>Samples for Spanish, French, English</h2>
+                <p>
+                    Son las diez en punto. Las siete y media.
+                </p>
+                <p>
+                    Charade en action , Espèce de divertissement où plusieurs personnes donnent à deviner à d’autres chaque partie d’un mot et le mot entier , en exécutant des scènes de pantomime ou de comédie qui en expriment la signification .
+                </p>
+                <p>
+                    Mary and Samantha arrived at the bus station before noon, and they left on the bus before I arrived.
+                </p>
+
             </div>
         );
     }
-
-    renderSteps = () => {
-        return (
-            <div>
-                <p>
-                    1. "Stem" (normalize) all training words
-                </p>
-                <p>
-                    2. Get each training word's "wordicity" -- probability it appears in a language and not the others
-                </p>
-                <p>
-                    3. Add up each languages wordicity scores (actually logrithmic sum)
-                </p>
-                <p>
-                    4. Apply word scores to Baye's equation to get final score for each language
-                </p>
-                <p />
-            </div>
-        );
-    };
 }

@@ -1,5 +1,8 @@
-import * as d3 from 'd3';
+import * as d3 from "d3";
 
+function random(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+}
 
 export function getExtent(data) {
     // Map each column to its extents [min, max, diff].
@@ -21,7 +24,6 @@ export function getExtent(data) {
     return extents;
 }
 
-
 export function getMean(data) {
     // Map each column to a mean value.
     // Ex. If there are 7 columns in the data, this will return
@@ -39,4 +41,31 @@ export function getMean(data) {
     });
 
     return means;
+}
+
+export function generateClumps(clumpCount, size, radius) {
+    clumpCount = clumpCount || 3;
+    size = size || 25;
+    radius = radius || 15;
+    const data = [];
+
+    for (let i = 0; i < clumpCount; i++) {
+        const center = [random(radius, 100 - radius), random(radius, 100 - radius)];
+
+        const pointCount = random(Math.round(size / 2), size);
+
+        for (let j = 0; j < pointCount; j++) {
+            const translate = [
+                random(-radius, radius),
+                random(-radius, radius)
+            ];
+            const x = center[0] + translate[0];
+            const y = center[1] + translate[1];
+            if (x > 0 && x < 101 && y > 0 && y < 101) {
+                data.push([x, y]);
+            }
+        }
+    }
+
+    return data;
 }

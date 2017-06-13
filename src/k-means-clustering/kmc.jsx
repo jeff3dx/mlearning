@@ -2,20 +2,19 @@ import React, { Component } from "react";
 import { PropTypes } from "prop-types";
 import * as d3 from "d3";
 import "./kmc.css";
-import { getExtent } from "../common";
+import { getExtent, generateClumps } from "../common";
 import { TRAINING_DATA } from "./training-data";
+
 
 const MIN_COLUMN = 0;
 const MAX_COLUMN = 1;
 const RANGE_COLUMN = 2;
 const MEANS_ANIM_DURATION = 1000;
 const ITERATION_DELAY = 2000;
-const MARGIN = 20;
 
-function randomBetween(min,max) {
-    return Math.floor(Math.random()*(max-min+1)+min);
+function random(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
 }
-
 
 /*
     Algorithm:
@@ -47,14 +46,15 @@ export default class Knn extends Component {
     };
 
     generateRandomTargetData() {
-        const count = randomBetween(15, 30);
+        const count = random(30, 50);
         const data = [];
 
         for (let i = 0; i < count; i++) {
-            data.push([randomBetween(1, 10), randomBetween(1, 10)]);
+            data.push([random(1, 100), random(1, 100)]);
         }
         return data;
     }
+
 
     /* Create D3 scales for all rendering to follow */
     getScales = (extents, width, height) => {
@@ -82,9 +82,7 @@ export default class Knn extends Component {
 
             // Generate coordinates in all dimensions
             for (let dimensionIndex in extents) {
-                mean[dimensionIndex] =
-                    extents[dimensionIndex][MIN_COLUMN] +
-                    Math.random() * extents[dimensionIndex][RANGE_COLUMN];
+                mean[dimensionIndex] = random(10, 90);
             }
             means.push(mean);
         }
@@ -257,7 +255,8 @@ export default class Knn extends Component {
         const innerWidth = width - pad * 2;
         const innerHeight = height - pad * 2;
 
-        const data = this.generateRandomTargetData();
+        //const data = this.generateRandomTargetData();
+        const data = generateClumps();
 
         const extents = getExtent(data);
         const scales = this.getScales(extents, innerWidth, innerHeight);
@@ -333,22 +332,17 @@ export default class Knn extends Component {
         const { width, height, pad } = this.props;
 
         return (
-            <div>
+            <div className="kmc dark-panel">
+
                 <h1 className="ui header">k Means Clustering</h1>
 
-                <p>
-                    "k" is the number of clusters to find. For "k Means Clustering" this must be predetermined.
-                </p>
-
-                <div
-                    className="kmc"
-                    style={{
-                        paddingLeft: MARGIN,
-                        backgroundColor: "#333",
-                        width: width + MARGIN * 2,
-                        marginBottom: 50
-                    }}
-                >
+                <div className="centered-panel">
+                    <p>
+                        Find clusters by iteration. For each blue point find the nearest red point. Then calculate the centroid of each group and move each red point to the centroid of it's group. Repeat until red points no longer move. Data points (blue) might change alegiance to their cluster point (red) during this process.
+                    </p>
+                    <p>
+                        "k" refers to the number of cluster points to use (3 for this demo).
+                    </p>
 
                     {/* Render graph */}
                     <svg className="container" width={width} height={height}>
@@ -397,7 +391,7 @@ export default class Knn extends Component {
 
                     <div>
                         <button
-                            className="ui button"
+                            className="ui blue button"
                             onClick={this.stepPlotTraining}
                             style={{ width: 220, textAlign: "left" }}
                         >
@@ -414,21 +408,21 @@ export default class Knn extends Component {
                     </div>
                     <div>
                         <button
-                            className="ui button"
+                            className="ui red button"
                             onClick={this.stepGenerateMeans}
                             style={{ width: 220, textAlign: "left" }}
                         >
-                            2. Plot random mean points
+                            2. Set random cluster points
                         </button>
                     </div>
                     <br />
                     <div>
                         <button
-                            className="ui button"
+                            className="ui orange button"
                             onClick={this.stepFindCentroids}
                             style={{ width: 220, textAlign: "left" }}
                         >
-                            3. Iterate centeroids
+                            3. Find Clusters
                         </button>
                     </div>
 

@@ -1,9 +1,51 @@
 @import url('../public/semantic/semantic.css');
 
-body {
+/*body {
   padding-left: 20px;
-}
+}*/
 
 .application-title {
   margin-bottom: 20px;
 }
+
+.dark-panel {
+    background-color: rgb(51, 51, 51);
+    color: #fff;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 20px;
+}
+
+.dark-panel .ui.header {
+  color: #fff !important;
+}
+
+.centered-panel {
+    width: 820px;
+    margin: auto;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 20px;
+}
+
+svg > rect {
+    fill: rgb(51, 51, 51);
+    stroke: rgb(91, 91, 91);
+    stroke-width: 1px;
+}
+
+a {
+  color: #ccc;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+a:hover {
+  color: #ccc;
+}
+
+.child-container {
+  margin-top: 40px;
+  background-color: rgb(51, 51, 51);
+}
+

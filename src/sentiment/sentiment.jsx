@@ -4,8 +4,13 @@ import { positives } from "./positives";
 import { stemmer } from "./stemmer.min";
 import { getBayes, getStorage } from "./bayes";
 import * as d3 from "d3";
+import BadPng from "./bad.png";
+import GoodPng from "./good.png";
+import "./sentiment.css";
 
 /*
+This code was heavily influenced by Burak Kanber's article https://www.burakkanber.com/blog/machine-learning-in-other-languages-introduction/
+
 The following is not free software. You may use it for educational purposes, but you may not redistribute or use it commercially.
 (C) All Rights Reserved, Burak Kanber 2013
 */
@@ -106,8 +111,7 @@ function trainAndTest(Bayes, onProgressFn) {
 
         // Probability less than 75%? Skip it. No sense in making guesses that we know are uncertain.
         if (negResult.score < 0.75) {
-        } else if (negResult.label === "negative")
-            correct++;
+        } else if (negResult.label === "negative") correct++;
         else {
             incorrect++;
             incorrectNegs.push(negatives[i]);
@@ -115,8 +119,7 @@ function trainAndTest(Bayes, onProgressFn) {
 
         // Repeat for the corresponding positive data point.
         if (posResult.score < 0.75) {
-        } else if (posResult.label === "positive")
-            correct++;
+        } else if (posResult.label === "positive") correct++;
         else {
             incorrect++;
             incorrectPos.push(positives[i]);
@@ -165,6 +168,10 @@ export default class Sentiment extends Component {
         this.setState({ resultScore: accuracy });
     };
 
+    onPasteReview = () => {
+        this.setState({ testText: "Jenkins tries not only to include men on Wonder Woman's side but also to make male viewers feel better about a woman saving them" });
+    }
+
     render() {
         const {
             testText,
@@ -176,26 +183,25 @@ export default class Sentiment extends Component {
 
         const colorScale = d3
             .scaleLinear()
-            .domain([-1, 0, 1])
-            .range(["#f00", "#ff0", "#0f0"]);
+            .domain([-1, -0.5, 0, 1])
+            .range(["#f00", "#f00", "#ff0", "#0f0"]);
 
         return (
-            <div>
+            <div
+                className="sentiment dark-panel"
+                style={{ paddingBottom: 200 }}
+            >
                 <h1>Sentiment Analysis (Modified Bayes)</h1>
-                <div
-                    style={{
-                        margin: "auto",
-                        backgroundColor: "#333",
-                        width: "50%",
-                        padding: 10,
-                        color: "#fff"
-                    }}
-                >
+
+                <div className="centered-panel">
+                    <p>
+                        Uses Bayes Theorem combined with "negation" and "stemming" to determine the sentiment of movie reviews. Negation allows us to treat negations ("not good") as monograms instead of bigrams.
+                    </p>
                     <p>
                         <span id="trainingProgressValue">
-                        Training progress: {trainingProgress}
+                            Training progress: {trainingProgress}
                         </span>
-                        %
+                        % (over 10,000 sample reviews)
                     </p>
                     <div className="progress-wrapper">
                         <div className="progress" id="trainingProgressBar" />
@@ -205,46 +211,77 @@ export default class Sentiment extends Component {
                         <div className="progress" id="testResultsBar" />
                     </div>
 
-                    <p>Test your own:</p>
-
                     <textarea
                         id="testBox"
                         value={testText}
                         onChange={this.onTestTextChange}
-                        placeholder="Your text here"
-                        style={{ width: "90%", color: "#000" }}
+                        placeholder="Train first, then put your text here. Try reviews from Rotten Tomatoes."
+                        style={{
+                            color: "#000",
+                            width: 655,
+                            height: 256,
+                            marginLeft: 0
+                        }}
                     />
 
                     <button
-                        className="ui button"
+                        className="ui blue button"
                         id="testButton"
                         onClick={this.onTrain}
                     >
-                        Train
+                        1. Train
                     </button>
                     <button
-                        className="ui button"
+                        className="ui grey button"
+                        id="testButton"
+                        onClick={this.onPasteReview}
+                    >
+                        2. Paste a movie review
+                    </button>
+                    <button
+                        className="ui orange button"
                         id="testButton"
                         onClick={this.onClick}
                     >
-                        Guess Sentiment
+                        3. Guess Sentiment
                     </button>
+                    <br/>
+                    <br/>
 
-                    <h2>{resultLabel}</h2>
-                    <h2>{resultScore}% accuracy</h2>
-
-                    <h2>Wordicities</h2>
                     {
-                        wordicities.map(d => {
-                            const colorMag = 0 - d.neg + d.pos;
-                            const color = colorScale(colorMag);
-
-                            return (
-                                <span style={{ color, fontSize: 24 }}>{d.word}{" "}</span>
-                            );
-                        })
+                        resultLabel === 'negative' &&
+                            <img src={BadPng} alt="" />
+                    }
+                    {
+                        resultLabel === 'positive' &&
+                            <img src={GoodPng} alt="" />
                     }
 
+                    <span className="result">{resultLabel}</span>
+                    <h2>{resultScore}% accuracy</h2>
+
+
+                    {
+                        wordicities && wordicities.length > 0 &&
+                        <div>
+                            <h2>Result Details</h2>
+
+                            <p>
+                                Words are colored green to red. Green is the word's probablity of being in a positive review, red in a negative review. The winning score determines whether the review is positive or negative. Partial words and "!" prefixes show the stemming and negation pre-processing.
+                            </p>
+
+                            {wordicities.map(d => {
+                                const colorMag = 0 - d.neg + d.pos;
+                                const color = colorScale(colorMag);
+
+                                return (
+                                    <span style={{ color, fontSize: 24 }}>
+                                        {d.word}{" "}
+                                    </span>
+                                );
+                            })}
+                        </div>
+                    }
                 </div>
             </div>
         );

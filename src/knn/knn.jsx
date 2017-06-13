@@ -61,7 +61,7 @@ export default class Knn extends Component {
         const scaleY = d3
             .scaleLinear()
             .domain([0, extents[1][1]])
-            .range([0, height]);
+            .range([height, 0]);
 
         return { x: scaleX, y: scaleY };
     };
@@ -326,41 +326,18 @@ export default class Knn extends Component {
         } = this.state;
 
         return (
-            <div>
-                <h1 className="ui header">kNN</h1>
-                <p>
-                    Determine if a layout is a house, apartment, or loft, based on sqft area and number of rooms.
-                </p>
+            <div className="knn dark-panel">
 
-                <p>
-                    "k" is the number of close points to find. For this demo it's 3.
-                </p>
+                <h1 className="ui header">kNN - Nearest Neighbor Classifier</h1>
 
-                <p>
-                    1. <strong>Click to set a test point</strong>
-                </p>
+                <div className="centered-panel">
+                    <p>
+                        Classify a data point as a house, apartment, or loft, based on square footage and number of rooms.  The colored points below are training data of known values. When you click a new point below, it's classification is determined based on the known values. The distance to every known value is measured. The closest known points determine the answer.
+                    </p>
+                    <p>
+                        "k" refers to the number of close points to find in determining the classification (3 for this demo).
+                    </p>
 
-                <p>
-                    2. Distance to every training point is measured
-                </p>
-
-                <p>
-                    3. Winner is the best out of "k" closest training points
-                </p>
-
-                <p>
-                    Circle is the area of influence of the training points used to determine the final guess
-                </p>
-
-                <div
-                    className="knn"
-                    style={{
-                        paddingLeft: MARGIN,
-                        backgroundColor: "#333",
-                        width: width + MARGIN * 2,
-                        marginBottom: 50
-                    }}
-                >
 
                     <svg className="container" width={width} height={height}>
                         {/* Render axis labels */}
@@ -436,7 +413,9 @@ export default class Knn extends Component {
                                                 backgroundColor: color(i)
                                             }}
                                         />
-                                        <div className="legend-label">{d}</div>
+                                        <div className="legend-label">
+                                            {d}
+                                        </div>
                                     </div>
                                 ))}
                             </div>

@@ -3,10 +3,7 @@ import { PropTypes } from "prop-types";
 import DBSCAN from "./dbscan";
 import * as d3 from "d3";
 import "./dbscan-view.css";
-
-function random(min, max) {
-    return Math.floor(Math.random() * (max - min + 1) + min);
-}
+import { generateClumps } from "../common";
 
 const POINTS_DUR = 1000;
 const CLUSTER_DUR = 1000;
@@ -29,22 +26,18 @@ export default class DbscanView extends Component {
         data: null,
         scales: null,
         extent: null,
-        epsilon: 15,
-        maxTestPoints: 50, // max test data points
+        epsilon: 10,
+        maxTestPoints: 100, // max test data points
         minPoints: 3,
         colors: d3.scaleOrdinal(d3.schemeCategory20)
     };
 
     generateData = () => {
+        const clumpCount = 3;
         const { width, height } = this.props;
         const { maxTestPoints } = this.state;
 
-        const size = random(Math.floor(maxTestPoints / 2), maxTestPoints);
-        const data = new Array(size);
-
-        for (let i = 0; i < size; i++) {
-            data[i] = [random(0, 100), random(0, 100)];
-        }
+        const data = generateClumps(clumpCount, Math.round(maxTestPoints / clumpCount), 15);
 
         const extent = this.getMax(data);
         const scales = this.getScales(extent, width, height);
@@ -82,23 +75,10 @@ export default class DbscanView extends Component {
             .attr("cx", d => scales.x(d[0]))
             .attr("cy", d => scales.y(d[1]))
             .attr("r", 5)
-            .style("visibility", "hidden")
-            .style("fill", BASE_COLOR)
-            // Wait then make visible
-            .transition()
-            .delay((d, i) => i * inc)
-            .duration(1)
-            .style("visibility", "visible");
+            .style("fill", BASE_COLOR);
     };
 
-    /*
-        clusters = [
-            [ pointId's... ]
-        ]
 
-        CLUSTER_DUR
-        POINTS_DUR
-    */
     renderClusters = (animPoints, clusters, epsilon, scales) => {
         const { colors } = this.state;
         const eRadius = scales.x(epsilon);
@@ -123,6 +103,7 @@ export default class DbscanView extends Component {
                 .style("fill", colors(c))
                 .style("opacity", 0.25)
                 .style("stroke", "none")
+
                 // delay the start of subsequent transitions
                 .transition()
                 .delay((d, i) => {
@@ -130,10 +111,12 @@ export default class DbscanView extends Component {
                     return delay;
                 })
                 .duration(1)
+
                 // visible
                 .transition()
                 .duration(1)
                 .style("visibility", "visible")
+
                 // grow radius
                 .transition()
                 .duration(250)
@@ -223,15 +206,27 @@ export default class DbscanView extends Component {
         const { epsilon, maxTestPoints, minPoints } = this.state;
 
         return (
-            <div className="dbscan">
+            <div className="dbscan dark-panel">
                 <h1>DBSCAN</h1>
-                <h4>
-                    (Density-Based Spatial Clustering of Applications with Noise)
-                </h4>
+                <div className="acronym">
+                    <strong>D</strong>ensity&nbsp;
+                    <strong>B</strong>ased&nbsp;
+                    <strong>S</strong>patial&nbsp;
+                    <strong>C</strong>lustering
+                    of&nbsp;
+                    <strong>A</strong>pplications
+                    with&nbsp;
+                    <strong>N</strong>oise&nbsp;
+                </div>
 
                 <div className="centered-panel">
+                    <p>
+                        Find clusters one point at a time. Use "nearest neighbor" to find other points close to one point within a threshold (epsilon). For each found point do the same until no more close points are found. Then start another cluster and keep going until all points have been touched. Outliers are skipped as "noise". When this runs, each colored circle is a nearest neighbor boundary.
+                    </p>
+
+
                     <svg width={width} height={height}>
-                        <rect x1={0} y1={0} width={width} height={height}/>
+                        <rect x1={0} y1={0} width={width} height={height} />
                         <g className="epsilon-plot-area" />
                         <g className="data-plot-area" />
                     </svg>
@@ -247,27 +242,18 @@ export default class DbscanView extends Component {
                                         onChange={this.onChangeMaxTestPoints}
                                     />
                                 </div>
-                                <br/>
-                                <br/>
+                                <br />
+                                <br />
                                 <button
                                     className="ui blue button"
                                     onClick={this.generateData}
                                 >
-                                    Generate data
+                                    1. Generate data
                                 </button>
 
                             </div>
 
                             <div className="eight wide column">
-                                <h4>Min Points Per Cluster</h4>
-                                <div className="ui left labeled input">
-                                    <input
-                                        type="number"
-                                        value={minPoints}
-                                        onChange={this.onChangeMinPoints}
-                                    />
-                                </div>
-                                <br/>
                                 <h4>Epsilon</h4>
                                 <div className="ui left labeled input">
                                     <input
@@ -276,13 +262,13 @@ export default class DbscanView extends Component {
                                         onChange={this.onChangeEpsilon}
                                     />
                                 </div>
-                                <br/>
-                                <br/>
+                                <br />
+                                <br />
                                 <button
                                     className="ui orange button"
                                     onClick={this.start}
                                 >
-                                    Start
+                                    2. Find Clusters
                                 </button>
 
                             </div>
