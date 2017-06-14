@@ -6,7 +6,6 @@ import { getExtent } from "../common";
 import { TRAINING_DATA } from "./training-data";
 
 const DEMO_ANIM_TIME = 1000;
-const MARGIN = 20;
 
 /*
     The basic procedure of this class is as follows:

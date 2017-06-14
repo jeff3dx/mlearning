@@ -5,7 +5,6 @@ import * as d3 from "d3";
 import "./dbscan-view.css";
 import { generateClumps } from "../common";
 
-const POINTS_DUR = 1000;
 const CLUSTER_DUR = 1000;
 const BASE_COLOR = "#888";
 
@@ -58,7 +57,6 @@ export default class DbscanView extends Component {
     };
 
     renderDataPoints = (data, scales) => {
-        const inc = POINTS_DUR / data.length;
         data.forEach((d, i) => (d.id = i));
 
         d3.select(".data-plot-area").selectAll(".data-point").remove();
@@ -203,7 +201,7 @@ export default class DbscanView extends Component {
 
     render() {
         const { width, height } = this.props;
-        const { epsilon, maxTestPoints, minPoints } = this.state;
+        const { epsilon, maxTestPoints } = this.state;
 
         return (
             <div className="dbscan dark-panel">

@@ -20,16 +20,6 @@ export default class App extends Component {
                             </NavLink>
                         </div>
                         <div className="three wide center aligned column">
-                            <NavLink to="/bayes"  activeStyle={activeStyle} style={{ display: 'inline-block' }}>
-                                Naive Bayes Classifier
-                            </NavLink>
-                        </div>
-                        <div className="three wide center aligned column">
-                            <NavLink to="/sentiment"  activeStyle={activeStyle} style={{ display: 'inline-block' }}>
-                                Sentiment Classifier
-                            </NavLink>
-                        </div>
-                        <div className="three wide center aligned column">
                             <NavLink to="/kmc"  activeStyle={activeStyle} style={{ display: 'inline-block' }}>
                                 k Means Clustering
                             </NavLink>
@@ -37,6 +27,16 @@ export default class App extends Component {
                         <div className="three wide center aligned column">
                             <NavLink to="/dbscan"  activeStyle={activeStyle} style={{ display: 'inline-block' }}>
                                 DBSCAN Clustering
+                            </NavLink>
+                        </div>
+                        <div className="three wide center aligned column">
+                            <NavLink to="/bayes"  activeStyle={activeStyle} style={{ display: 'inline-block' }}>
+                                Naive Bayes Classifier
+                            </NavLink>
+                        </div>
+                        <div className="three wide center aligned column">
+                            <NavLink to="/sentiment"  activeStyle={activeStyle} style={{ display: 'inline-block' }}>
+                                Sentiment Classifier
                             </NavLink>
                         </div>
                     </div>

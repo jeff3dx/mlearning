@@ -78,12 +78,12 @@ export default class Knn extends Component {
         const means = [];
 
         while (k--) {
-            var mean = [];
+            var mean = [random(extents[0][0], extents[0][1]), random(extents[1][0], extents[1][1])];
 
             // Generate coordinates in all dimensions
-            for (let dimensionIndex in extents) {
-                mean[dimensionIndex] = random(10, 90);
-            }
+            // for (let dimensionIndex in extents) {
+            //     mean[dimensionIndex] = random(10, 90);
+            // }
             means.push(mean);
         }
 

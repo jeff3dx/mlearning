@@ -300,9 +300,6 @@ export default class BayesDemo extends Component {
             : "";
         const displayLabel = winnerLabel || "";
 
-        const slc = this.stats.stemLabelCount;
-        const stems = Object.keys(slc).map(key => ({ key, value: slc[key] }));
-
         return (
             <div className="dark-panel">
                 <h1 className="ui header">Naive Bayes Classifier</h1>

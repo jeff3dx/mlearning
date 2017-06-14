@@ -1,6 +1,5 @@
 import React from 'react';
-//import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
-import { BrowserRouter as Router, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Route, Redirect } from 'react-router-dom'
 import { browserHistory } from 'history';
 
 import Application from './application';
@@ -13,6 +12,7 @@ import Dbscan from './dbscan/dbscan-view';
 export default (
   <Router history={browserHistory}>
     <Application>
+      <Redirect from="/" exact to="/knn" />
       <Route path='/knn' component={Knn} />
       <Route path='/kmc' component={KMeansClustering} />
       <Route path='/bayes' component={Bayes} />
