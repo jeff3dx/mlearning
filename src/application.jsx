@@ -13,7 +13,7 @@ export default class App extends Component {
         return (
             <div className="application" >
                 <div className="ui fixed inverted blue menu">
-                    <div className="ui grid">
+                    <div className="ui grid" style={{ width: '100%' }}>
                         <div className="three wide center aligned column">
                             <NavLink to="/knn"  activeStyle={activeStyle} style={{ display: 'inline-block' }}>
                                 kNN Classifier
