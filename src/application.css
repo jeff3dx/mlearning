@@ -1,8 +1,8 @@
 @import url('../public/semantic/semantic.css');
 
-/*body {
-  padding-left: 20px;
-}*/
+body {
+    background-color: rgb(51, 51, 51);
+}
 
 .application-title {
   margin-bottom: 20px;
@@ -21,7 +21,6 @@
 }
 
 .centered-panel {
-    width: 820px;
     margin: auto;
     padding-top: 10px;
     padding-bottom: 10px;
