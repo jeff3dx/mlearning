@@ -205,7 +205,7 @@ export default class DbscanView extends Component {
 
         return (
             <div className="dbscan dark-panel">
-                <h1>DBSCAN</h1>
+                <h1>DBSCAN (clustering)</h1>
                 <div className="acronym">
                     <strong>D</strong>ensity&nbsp;
                     <strong>B</strong>ased&nbsp;

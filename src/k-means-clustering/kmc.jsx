@@ -334,7 +334,7 @@ export default class Knn extends Component {
         return (
             <div className="kmc dark-panel">
 
-                <h1 className="ui header">k Means Clustering</h1>
+                <h1 className="ui header">k Means (clustering)</h1>
 
                 <div className="centered-panel">
                     <p>

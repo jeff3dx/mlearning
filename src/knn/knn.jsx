@@ -187,7 +187,7 @@ export default class Knn extends Component {
     /* Initialize the click handler */
     setupClick = () => {
         const self = this;
-        d3.select(".click-area").on("click", function() {
+        d3.select(".click-area").on("click", function () {
             const coords = d3.mouse(this);
             self.onClick(coords[0], coords[1]);
         });
@@ -327,7 +327,7 @@ export default class Knn extends Component {
         return (
             <div className="knn dark-panel">
 
-                <h1 className="ui header">kNN - Nearest Neighbor Classifier</h1>
+                <h1 className="ui header">kNN - k Nearest Neighbor (classifier)</h1>
 
                 <div className="centered-panel">
                     <p>
@@ -336,7 +336,6 @@ export default class Knn extends Component {
                     <p>
                         "k" refers to the number of close points to find in determining the classification (3 for this demo).
                     </p>
-
 
                     <svg className="container" width={width} height={height}>
                         {/* Render axis labels */}
@@ -372,7 +371,7 @@ export default class Knn extends Component {
                             />
 
                             {/* Render all training points */
-                            scales.x &&
+                                scales.x &&
                                 trainingData.data.map((d, i) => (
                                     <circle
                                         className="training-point"
@@ -420,7 +419,7 @@ export default class Knn extends Component {
                             </div>
 
                             {/* Render list of guesses */
-                            guesses &&
+                                guesses &&
                                 <div className="eight wide column">
 
                                     <h4 className="ui header">Guesses</h4>

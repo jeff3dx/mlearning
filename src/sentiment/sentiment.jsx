@@ -191,12 +191,23 @@ export default class Sentiment extends Component {
                 className="sentiment dark-panel"
                 style={{ paddingBottom: 200 }}
             >
-                <h1>Sentiment Analysis (Modified Bayes)</h1>
+                <h1>Sentiment Analysis (classifier, Naive Bayes)</h1>
 
                 <div className="centered-panel">
                     <p>
                         Uses Bayes Theorem combined with "negation" and "stemming" to determine the sentiment of movie reviews. Negation allows us to treat negations ("not good") as monograms instead of bigrams.
                     </p>
+
+                    <p>
+                        Preprocessing:
+                        <ul>
+                        <li>Remove all punctuation</li>
+                        <li>Lower case</li>
+                        <li>Stem all words  ("exciting" ---> "excit")</li>
+                        <li>Apply negation ("not good" ---> "!good")</li>
+                        </ul>
+                    </p>
+
                     <p>
                         <span id="trainingProgressValue">
                             Training progress: {trainingProgress}

@@ -16,27 +16,27 @@ export default class App extends Component {
                     <div className="ui grid" style={{ width: '100%' }}>
                         <div className="three wide center aligned column">
                             <NavLink to="/knn"  activeStyle={activeStyle} style={{ display: 'inline-block' }}>
-                                kNN Classifier
+                                kNN
                             </NavLink>
                         </div>
                         <div className="three wide center aligned column">
                             <NavLink to="/kmc"  activeStyle={activeStyle} style={{ display: 'inline-block' }}>
-                                k Means Clustering
+                                k Means
                             </NavLink>
                         </div>
                         <div className="three wide center aligned column">
                             <NavLink to="/dbscan"  activeStyle={activeStyle} style={{ display: 'inline-block' }}>
-                                DBSCAN Clustering
+                                DBSCAN
                             </NavLink>
                         </div>
                         <div className="three wide center aligned column">
                             <NavLink to="/bayes"  activeStyle={activeStyle} style={{ display: 'inline-block' }}>
-                                Naive Bayes Classifier
+                                Language Classifier
                             </NavLink>
                         </div>
                         <div className="three wide center aligned column">
                             <NavLink to="/sentiment"  activeStyle={activeStyle} style={{ display: 'inline-block' }}>
-                                Sentiment Classifier
+                                Sentiment Analysis
                             </NavLink>
                         </div>
                     </div>
